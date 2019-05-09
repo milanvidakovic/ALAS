@@ -1,0 +1,117 @@
+import types
+
+DnarsBeliefs:
+	'beliefs' '{' statements += DnarsStatement[','] ';' '}'
+;
+
+DnarsQuestion:
+	'Terms' answer = ID '=' 'question' '(' question = Question (',' num=INT)? ')' ';'
+;
+
+DnarsInference:
+	'Statements' answer = ID '=' 'inference' '(' judgement = Judgement (',' num=INT)?')' ';'
+;
+
+BeliefAU:
+	(name = 'beliefadded' | name = 'beliefupdated') '(' (judgement = Judgement ',')? param = ID')'
+;
+
+Judgement:
+	subj = Term copula = Copula pred = Term
+;
+
+DnarsStatement:
+	judgement = Judgement truth = Truth
+;
+
+Term:
+	AtomicTerm | CompoundTerm
+;
+
+Copula:
+	Inherit | Similar
+;
+
+Truth:
+	'(' number = NUMBER ',' number = NUMBER ')'
+;
+
+AtomicTerm:
+	type = BaseType
+;
+
+CompoundTerm:
+	PrefixCompTerm | InfixCompTerm | ImgCompTerm
+;
+
+Inherit:
+	'->'
+;
+
+Similar:
+	'~'
+;
+
+PrefixCompTerm:
+	'(' connector = Connector terms+=AtomicTerm ')'
+;
+
+InfixCompTerm:
+	'(' term=AtomicTerm cts+=CompTerm ')'
+;
+
+ImgCompTerm:
+	'(' image = Image term = AtomicTerm (option = PreTerm | option = PostTerm) ')'
+;
+
+CompTerm:
+	connector=Connector term=AtomicTerm
+;
+
+Image:
+	ExtImage | IntImage
+;
+
+PreTerm:
+	plc = Placeholder term = AtomicTerm
+;
+
+PostTerm:
+	term = AtomicTerm plc = Placeholder
+;
+
+Connector: 
+	Product | Image
+;
+
+ExtImage:
+	'/'
+;
+
+IntImage:
+	/[\\][\\]/
+;
+
+Product:
+	'x'
+;
+
+Placeholder:
+	'*'
+;
+
+Question:
+	PreQuestion | PostQuestion
+;
+
+PreQuestion:
+	'?' copula=Copula term=Term
+;
+
+PostQuestion:
+	term=Term  copula=Copula '?'
+;
+
+BeliefAUVariable:
+	name=ID
+;

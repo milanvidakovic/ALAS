@@ -1,0 +1,20 @@
+Type:
+	'String' | 'int' | 'float' | 'double' | 'boolean'
+	| 'char' | 'byte' | 'short' | 'long' | 'void'
+;
+
+ObjectType:
+	'ACLMessage' | 'AID' | 'AgentClass'
+;
+
+BaseType:
+	(INT !'.') | FLOAT | BOOL | StringType | IDType
+;
+
+StringType:
+	value=STRING
+;
+
+IDType:
+	(this = 'this.')? value=ID
+;

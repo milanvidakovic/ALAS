@@ -1,0 +1,17 @@
+package siebog.agents;
+
+agent MobileAgent{
+	arrived{
+		log("Arrived at host: " + msg.content, True);
+	}
+	
+	@PreCondition(REQUEST)
+	action ActionA(ACLMessage msg) {
+		log("Received message to move to host: " + msg.content);
+		move(msg.content);
+	}
+	
+	action ActionB(ACLMessage msg) {
+		log("Wrong performative. Send me REQUEST to move to other node.", true);
+	}
+}

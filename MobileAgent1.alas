@@ -1,0 +1,42 @@
+package siebog.agents;
+
+agent MobileAgent1{
+	int num = 42;
+	
+	arrived{
+		this.num++;
+		if (isServer == true) {
+			this.isServer = true;
+			print("PRINT: I'm at " + host + " server, and the number is " + this.num);
+			log("CONSOLE.LOG: I'm at " + host + " server, and the number is " + this.num);
+		} else {
+			this.isServer = false;
+			log("I just came from " + host + " to my browser, and the number is " + this.num);
+		}
+	}
+
+	action AgentAction(ACLMessage msg) {
+		String content = msg.content;
+		if (this.isServer == true) {
+			print("I'm on the server and I received the following message:\n" + msg);
+			//msg = JSON.parse(msg);
+			print("Message content: " + msg.content);
+			// If this agent receives a "move" string in the ACL message content,
+			// it will go back to the browser.
+			if (content == "move") {
+				print("Got the message to move back to the client.");
+				// This will initiate the move.
+				moveToClient();
+			} else {
+				moveToServer(msg.content);
+			} 
+		} else {
+			log("A'm in a client browser, and I have received the following message: " + msg);
+			// If this agent receives a "move" string in the ACL message content,
+			// it will move to the server.
+			if (content == "move") {
+				moveToServer();
+			}
+		}
+	}
+}

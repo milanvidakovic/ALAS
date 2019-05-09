@@ -1,0 +1,253 @@
+import types
+import performative
+import dnars
+
+AgentModel:
+	package = Package?
+	importScripts *= ImportScripts
+	state = State?
+	domain = Domain?
+    'agent' name=ID
+	'{' features+=Feature '}'
+;
+
+Package:
+	'package' pack += ID['.'] ';'
+;
+
+ImportScripts:
+	'importScripts' '(' script=STRING ')' ';'
+;
+
+State:
+	'stateful' | 'stateless' //ako nema nista napisano generisi stateless
+;
+
+Domain:
+	'domain' '(' name=ID ')'
+;
+
+Feature:
+	AgentStates | AgentState | Variable | (Assignment ';')
+	| Function | Action | Init | Arrived 
+	| DnarsBeliefs | DnarsAddedUpdated | DnarsQuestion | DnarsInference
+;
+
+AgentStates:
+    'states' '{'states += Variable '}'
+;
+
+AgentState:
+	'state' state = Variable
+;
+
+Variable:
+	type=Type varnames+=ID[','] ( '=' exp = Expression )? ';'
+;
+
+Function:
+	function=FunctionDeclaration '{'s*=Statements'}'
+;
+
+Action:
+	action=ActionDeclaration '{'s*=Statements'}'
+;
+
+Init:
+	'init' '{'s*=Statements'}'
+;
+
+Arrived:
+	'arrived' '{'s*=Statements'}'
+;
+
+FunctionDeclaration:
+	type = Type func=FunctionName
+	'(' paramlist*=Parameter[','] ')'
+;
+
+FunctionName:
+	name=/(?!(move|post|log|print)\b)\b\w+/
+;
+
+Parameter:
+	(type=Type | type=ObjectType) name=ID
+;
+
+ActionDeclaration:
+	preCondition=PreCondition?
+	'action' name=ID '(' param=Parameter ')' 
+;
+
+PreCondition:
+	'@PreCondition' '('performative=Performative ')'
+;
+
+Statements:
+	Variable
+	| (Assignment ';')
+	| IfStatement
+	| ForStatement
+	| WhileStatement
+	| DoWhileStatement
+	| (CallFunction ';')
+	| ACLMessage
+	| ACLMessagePropertyDefinition
+	| AID
+	| AgentClass
+	| Move
+	| Post
+	| Log
+	| (IncDec ';')
+	| Return
+;
+
+Return:
+	'return' exp=Expression ';'
+;
+
+IfStatement:
+	'if' '('condition=Assignment')' '{'s*=Statements'}'
+	elseif *= Elseif
+	_else = _Else?
+;
+
+Elseif:
+	'else if' '('condition=Assignment')' '{'s*=Statements'}'
+;
+
+_Else:
+	'else' '{'s*=Statements'}'
+;
+
+ForStatement:
+	'for' '('param=Variable 
+			param=Assignment ';'
+			(param=IncDec | param=Assignment) ')'
+	'{'s*=Statements'}'
+;
+
+IncDec:
+	var1=IDType? (z='++' | z='--') var2=IDType?
+;
+
+WhileStatement:
+	'while' '('condition=Assignment')' '{'s*=Statements'}'
+;
+
+DoWhileStatement:
+	'do' '{'s*=Statements'}'
+	'while' '(' condition=Assignment ')' ';'
+;
+
+CallFunction:
+	!(('post' | 'log' | 'print'| 'moveToClient' | 'moveToServer') '(') func=FunctionName '(' params*=Func_Params[','] ')'
+;
+
+Func_Params:
+	CallFunction | BaseType
+;
+
+ACLMessage:
+	type=ObjectType name=ID '=' 'new' type=ObjectType '(' ')' ';'
+;
+
+AID:
+	type=ObjectType name=ID '=' 'new' type=ObjectType '(' aidname=STRING ',' host=STRING ',' agclass=ID ')' ';'
+;
+
+AgentClass:
+	type=ObjectType name=ID '=' 'new' type=ObjectType '(' module=STRING ',' ejbname=STRING ',' path=STRING ')' ';'
+;
+
+ACLMessagePropertyDefinition:
+	aclmessage=ID '.' property=Property ';'
+;
+
+Property:
+	PerformativeDef | Receivers | Sender | Content | ReplyTo
+;
+
+PerformativeDef:
+	'performative' '=' performative=Performative
+;
+
+Receivers:
+	'receivers' '=' '{' receivers+=ID[','] '}'
+;
+
+Sender:
+	'sender' '=' sender=ID
+;
+
+Content:
+	'content' '=' content=STRING
+;
+
+ReplyTo:
+	'replyTo' '=' replyTo=ID
+;
+
+ACLMessageProperty:
+	aclmessage = ID '.' property = Properties
+;
+
+Properties:
+	'performative' | 'receivers' | 'sender' | 'content' | 'replyTo'
+;
+
+Move:
+	(command='moveToServer' | command='moveToClient') '(' (host = ACLMessageProperty | host = StringType)? ')' ';'
+;
+
+Post:
+	'post' '(' msg=ID ')' ';'
+;
+
+Log:
+	(command='log' | command='print') '(' params+=Params['+'] (',' param = BOOL)? ')' ';'
+;
+
+Params:
+	ACLMessageProperty | CallFunction | IDType | StringType
+;
+
+Assignment:
+	(this = 'this' '.')? varname=ID op=Operator exp=Expression
+;
+
+Expression:
+	op=Word (op=PlusOrMinus op=Word)* 
+;
+
+Word: 
+	op=Factor (op=MulOrDiv op=Factor)*
+;
+
+Factor: 
+	(op=PlusOrMinus)? op=Operand
+;
+
+Operand: 
+	op=ACLMessageProperty | op=CallFunction | op=BaseType | ('(' op=Expression ')')
+;
+
+Operator:
+	'==' | '<=' | '>=' | '!=' | '=' | '<' | '>' | '!' | '&&' | '||'
+;
+
+PlusOrMinus: 
+	'+' | '-'
+;
+
+MulOrDiv: 
+	'*' | '/'
+;
+
+DnarsAddedUpdated:
+	annotation = BeliefAU '{'s*=Statements'}'
+;
+
+Comment:
+  /\/\/.*$/
+;
