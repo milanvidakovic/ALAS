@@ -1016,6 +1016,8 @@ def main(debug=False):
 			temp += '"' + self.type.value + '"'
 		elif isinstance(self.type, bool):
 			temp += str(self.type).lower()
+		elif self.type.__class__.__name__ == 'IDType':
+			temp += str(self.type.value)
 		else:
 			temp += str(self.type)
 		return temp
@@ -1091,7 +1093,7 @@ def main(debug=False):
 	alas_mm = metamodel_from_file('alas.tx',
 			classes=[Expression, Word, Factor, Operand, IncDec], auto_init_attributes = False, debug=debug)
 
-	agent_model = alas_mm.model_from_file('MobileAgent1.alas')
+	agent_model = alas_mm.model_from_file('DnarsAgent.alas')
 
 	# Initialize template engine.
 	jinja_env = jinja2.Environment(
