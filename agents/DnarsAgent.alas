@@ -1,0 +1,33 @@
+package siebog.agents;
+
+domain(dnarsdomain) agent DnarsAgent {
+	beliefs {
+		mandarina -> voce (0.9, 0.7),
+ 		narandza -> voce (0.9, 0.8),
+ 		jabuka -> voce (0.8, 0.7),
+		pcela -> insekt (1.0, 0.9),
+ 		citrus ~ limun (0.76, 0.83),
+ 		(x pcela med) -> pravi (1.0, 0.9),
+ 		(x Ernest_Hemingvej 1899) -> datum_rodjenja (1.0, 0.9),
+ 		jede -> (x zec sargarepa) (1.0, 0.9);
+ 	}
+ 	beliefadded(beliefs){
+ 		log('Sva nova verovanja: ' +beliefs);
+ 	}
+ 	beliefadded(mandarina -> voce, beliefs){
+ 		log('Mandarina je vrsta voca: ' +beliefs);
+ 	}
+	beliefadded(banana -> voce, beliefs){
+ 		log('Banana je vrsta voca: ' +beliefs);
+ 	}
+ 	beliefupdated(beliefs){
+ 		log('Sva izmenjena verovanja: ' +beliefs);
+ 	}
+ 	beliefupdated((x pcela med) -> pravi, beliefs){ 
+ 		log('Izmenjeno verovanje: ' +beliefs);
+ 	}
+ 	Terms t1 = question((\\ datum_rodjenja Ernest_Hemingvej *) -> ?);
+ 	Terms t2 = question(? -> voce, 3);
+ 	Statements s1 = inference(pcela -> insekt);
+ 	Statements s2 = inference(jabuka -> voce, 2);
+}

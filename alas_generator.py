@@ -2,6 +2,7 @@
 Generate java and javascript code from textX model using jinja2
 template engine (http://jinja.pocoo.org/docs/dev/)
 """
+import os, errno
 from os import mkdir
 from os.path import exists, dirname, join
 import jinja2
@@ -1093,7 +1094,7 @@ def main(debug=False):
 	alas_mm = metamodel_from_file('alas.tx',
 			classes=[Expression, Word, Factor, Operand, IncDec], auto_init_attributes = False, debug=debug)
 
-	agent_model = alas_mm.model_from_file('DnarsAgent.alas')
+	agent_model = alas_mm.model_from_file('agents/DnarsAgent.alas')
 
 	# Initialize template engine.
 	jinja_env = jinja2.Environment(
@@ -1123,23 +1124,27 @@ def main(debug=False):
 	
 	if target_language == "java":
 		# Load Java template
-		template = jinja_env.get_template('java.template')
+		template = jinja_env.get_template('templates/java.template')
 	elif target_language == "js":
 		# Load JavaScript template
-		template = jinja_env.get_template('js.template')
+		template = jinja_env.get_template('templates/js.template')
 
-	if output_file!="":
+	if output_file!="":	
+		srcgen = join(this_folder, 'srcgen')
+		if not exists(srcgen): mkdir(srcgen) # Create srcgen folder
 		output_file+=target_language
 		list_dir = target_language.split()
 		if agent_model.package != None:
 			list_dir += agent_model.package.pack
-		srcgen_folder=this_folder
+		srcgen_folder=join(this_folder, "srcgen")
 		for i in range(len(list_dir)):
 			srcgen_folder = join(srcgen_folder, list_dir[i])
 			if not exists(srcgen_folder):
 				mkdir(srcgen_folder)
 		with open(join(srcgen_folder, output_file % agent_model.name), 'w') as f:
 			f.write(template.render(agent=agent_model))
+	
+	print(output_file % agent_model.name, "generated.")
 
 if __name__ == "__main__":
 	main()
